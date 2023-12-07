@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 
-typedef enum {DATE_SIZE_ONLY, NO_PARALLEL} long_opt_values;
+typedef enum {DATE_SIZE_ONLY, NO_PARALLEL, DRY_RUN} long_opt_values;
 
 /*!
  * @brief function display_help displays a brief manual for the program usage
@@ -31,6 +31,8 @@ void init_configuration(configuration_t *the_config) {
         the_config->processes_count = 1; // Un seul processus par défaut
         the_config->is_parallel = true; // Par défaut, exécuter en parallèle
         the_config->uses_md5 = true; // Par défaut, utiliser le calcul MD5
+        the_config->uses_verbose = false; // Par défaut, ne pas utiliser verbose
+        the_config->uses_dry_run = false; // Par défaut, ne pas utilsier dry-run
     }
 }
 
@@ -50,13 +52,14 @@ int set_configuration(configuration_t *the_config, int argc, char *argv[]) {
     static struct option long_options[] = {
             {"date-size-only", no_argument, 0, DATE_SIZE_ONLY},
             {"no-parallel", no_argument, 0, NO_PARALLEL},
+            {"dry-run", no_argument, 0, DRY_RUN},
             {0, 0, 0, 0}
     };
 
     int opt;
     int option_index = 0;
 
-    while ((opt = getopt_long(argc, argv, "hn:", long_options, &option_index)) != -1) {
+    while ((opt = getopt_long(argc, argv, "hvn:", long_options, &option_index)) != -1) {
         switch (opt) {
             case 'h':
                 display_help(argv[0]);
@@ -64,12 +67,18 @@ int set_configuration(configuration_t *the_config, int argc, char *argv[]) {
             case 'n':
                 the_config->processes_count = (uint8_t) atoi(optarg);
                 break;
+            case 'v':
+                the_config->uses_verbose = true;
+                break;
             case DATE_SIZE_ONLY:
                 the_config->uses_md5 = false;
                 break;
             case NO_PARALLEL:
                 the_config->is_parallel = false;
                 break;
+
+            case DRY_RUN:
+                the_config->uses_dry_run = true;
             default:
                 display_help(argv[0]);
                 return -1;
