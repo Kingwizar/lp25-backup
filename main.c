@@ -45,7 +45,6 @@ int main(int argc, char *argv[]) {
     
     // Clean resources
     clean_processes(&my_config, &processes_context);
-    printf("lol");
 
     return 0;
 }
