@@ -48,7 +48,7 @@ int set_configuration(configuration_t *the_config, int argc, char *argv[]) {
 
     // Options longues
     static struct option long_options[] = {
-            {"date_size_only", no_argument, 0, DATE_SIZE_ONLY},
+            {"date-size-only", no_argument, 0, DATE_SIZE_ONLY},
             {"no-parallel", no_argument, 0, NO_PARALLEL},
             {0, 0, 0, 0}
     };
