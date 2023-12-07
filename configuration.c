@@ -18,6 +18,8 @@ void display_help(char *my_name) {
     printf("         \t-h display help (this text)\n");
     printf("         \t--date_size_only disables MD5 calculation for files\n");
     printf("         \t--no-parallel disables parallel computing (cancels values of option -n)\n");
+    printf("         \t--dry-run for test execution (just list the operations to do, do not actually make the copies)\n");
+    printf("         \t-v for verbose (display of the list and operations in details)\n");
 }
 
 /*!
@@ -76,7 +78,6 @@ int set_configuration(configuration_t *the_config, int argc, char *argv[]) {
             case NO_PARALLEL:
                 the_config->is_parallel = false;
                 break;
-
             case DRY_RUN:
                 the_config->uses_dry_run = true;
             default:
