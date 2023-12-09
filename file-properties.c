@@ -11,6 +11,7 @@
 #include <fcntl.h>
 #include <stdio.h>
 #include "utility.h"
+#include <stdlib.h>
 
 /*!
  * @brief get_file_stats gets all of the required information for a file (inc. directories)
@@ -140,8 +141,8 @@ bool is_directory_writable(char *path_to_dir) {
         return false;
     }
 
-    close(fd);
-    unlink(temp_path); // Clean up the temporary file
+    close(fd); // fermer le fichier temporaire
+    unlink(temp_path); // nettoyer le fichier temporaire
 
     return true;
 }
