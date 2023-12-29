@@ -12,8 +12,10 @@
  */
 char *concat_path(char *result, char *prefix, char *suffix) {
     // Check if the inputs are valid
-    if (result == NULL || prefix == NULL || suffix == NULL) {
+    if (result == NULL || prefix == NULL) {
         return NULL;
+    }else if (suffix == NULL){
+        return prefix;
     }
 
     // Check total length

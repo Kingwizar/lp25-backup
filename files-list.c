@@ -116,13 +116,14 @@ int add_entry_to_tail(files_list_t *list, files_list_entry_t *entry) {
  *  @return a pointer to the element found, NULL if none were found.
  */
 files_list_entry_t *find_entry_by_name(files_list_t *list, char *file_path, size_t start_of_src, size_t start_of_dest) {
+    // If list or path is NULL we return NULL
     if (list == NULL || file_path == NULL) {
         return NULL;
     }
 
     for (files_list_entry_t *cursor = list->head; cursor != NULL; cursor = cursor->next) {
         if (strcmp(cursor->path_and_name + start_of_src, file_path + start_of_dest) == 0) {
-            return cursor;
+            return cursor; // Stop the research
         }
     }
 
