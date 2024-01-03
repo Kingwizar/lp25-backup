@@ -53,7 +53,7 @@ int prepare(configuration_t *the_config, process_context_t *p_context) {
         return -1;
     }
 
-    // Create destination lister process
+    // Create destination lister process :
     p_context->destination_lister_pid = make_process(p_context, destination_lister_process_loop, NULL);
     if (p_context->destination_lister_pid == -1) {
         perror("Failed to create destination lister process");
