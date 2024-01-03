@@ -8,7 +8,9 @@
 #include "sync.h"
 #include <string.h>
 #include <errno.h>
-
+#include <signal.h>
+#include <sys/types.h>
+#include <sys/wait.h>
 /*!
  * @brief prepare prepares (only when parallel is enabled) the processes used for the synchronization.
  * @param the_config is a pointer to the program configuration
@@ -108,6 +110,8 @@ int make_process(process_context_t *p_context, process_loop_t func, void *parame
  * @param parameters is a pointer to its parameters, to be cast to a lister_configuration_t
  */
 void lister_process_loop(void *parameters) {
+    lister_configuration_t *config = (lister_configuration_t *)parameters;
+    // Logique de listage (par exemple, lister des fichiers dans un répertoire)
 }
 
 /*!
@@ -115,17 +119,46 @@ void lister_process_loop(void *parameters) {
  * @param parameters is a pointer to its parameters, to be cast to an analyzer_configuration_t
  */
 void analyzer_process_loop(void *parameters) {
+    analyzer_configuration_t *config = (analyzer_configuration_t *)parameters;
+    // Logique d'analyse (par exemple, comparer des propriétés de fichiers)
 }
 
+// Fonction make_process inchangée...
+
 /*!
- * @brief clean_processes cleans the processes by sending them a terminate command and waiting to the confirmation
+ * @brief clean_processes cleans the processes by sending them a terminate command and waiting for confirmation
  * @param the_config is a pointer to the program configuration
  * @param p_context is a pointer to the processes context
  */
 void clean_processes(configuration_t *the_config, process_context_t *p_context) {
-    // Do nothing if not parallel
-    // Send terminate
-    // Wait for responses
-    // Free allocated memory
-    // Free the MQ
+    if (the_config == NULL || p_context == NULL) {
+        return;
+    }
+
+    // Envoyer un signal de terminaison aux processus enfants
+    for (int i = 0; i < the_config->processes_count; i++) {
+        if (p_context->source_analyzers_pids[i] > 0) {
+            kill(p_context->source_analyzers_pids[i], SIGTERM);
+        }
+        if (p_context->destination_analyzers_pids[i] > 0) {
+            kill(p_context->destination_analyzers_pids[i], SIGTERM);
+        }
+    }
+
+    // Attendre la confirmation de terminaison
+    for (int i = 0; i < the_config->processes_count; i++) {
+        if (p_context->source_analyzers_pids[i] > 0) {
+            waitpid(p_context->source_analyzers_pids[i], NULL, 0);
+        }
+        if (p_context->destination_analyzers_pids[i] > 0) {
+            waitpid(p_context->destination_analyzers_pids[i], NULL, 0);
+        }
+    }
+
+    // Libérer la mémoire allouée
+    free(p_context->source_analyzers_pids);
+    free(p_context->destination_analyzers_pids);
+
+    // Supprimer la file de messages
+    msgctl(p_context->message_queue_id, IPC_RMID, NULL);
 }
