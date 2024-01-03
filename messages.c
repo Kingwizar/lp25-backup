@@ -18,7 +18,7 @@ int send_file_entry(int msg_queue, int recipient, files_list_entry_t *file_entry
     message.mtype = recipient;
     message.op_code = cmd_code;
     memcpy(&message.payload, file_entry, sizeof(files_list_entry_t));
-    message.reply_to = msgget(IPC_PRIVATE, 0644 | IPC_CREAT);
+    message.reply_to = msg_queue;
 
     return msgsnd(msg_queue, &message, sizeof(files_list_entry_transmit_t) - sizeof(long), 0);
 }
