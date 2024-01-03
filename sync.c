@@ -36,6 +36,16 @@ void synchronize(configuration_t *the_config, process_context_t *p_context) {
 
     // Compare lists and synchronize files
     // ...
+    files_list_entry_t* tempsrc = src_list.head;
+    files_list_entry_t* tempdst = dst_list.head;
+
+    while(tempsrc != NULL && tempdst != NULL){
+        if(mismatch(tempsrc,tempdst,the_config->uses_md5)){
+            tempdst = tempsrc;
+        }
+        tempsrc = tempsrc->next;
+        tempdst = tempdst->next;
+    }
 
     clear_files_list(&src_list);
     clear_files_list(&dst_list);
