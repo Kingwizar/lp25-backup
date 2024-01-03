@@ -44,6 +44,38 @@ int prepare(configuration_t *the_config, process_context_t *p_context) {
         return -1;
     }
 
+    // Create source lister process
+    p_context->source_lister_pid = make_process(p_context, source_lister_process_loop, NULL);
+    if (p_context->source_lister_pid == -1) {
+        perror("Failed to create source lister process");
+        return -1;
+    }
+
+    // Create destination lister process
+    p_context->destination_lister_pid = make_process(p_context, destination_lister_process_loop, NULL);
+    if (p_context->destination_lister_pid == -1) {
+        perror("Failed to create destination lister process");
+        return -1;
+    }
+
+    // Create source analyzers processes
+    for (int i = 0; i < the_config->processes_count; ++i) {
+        p_context->source_analyzers_pids[i] = make_process(p_context, source_analyzer_process_loop, NULL);
+        if (p_context->source_analyzers_pids[i] == -1) {
+            perror("Failed to create source analyzer process");
+            return -1;
+        }
+    }
+
+    // Create destination analyzers processes
+    for (int i = 0; i < the_config->processes_count; ++i) {
+        p_context->destination_analyzers_pids[i] = make_process(p_context, destination_analyzer_process_loop, NULL);
+        if (p_context->destination_analyzers_pids[i] == -1) {
+            perror("Failed to create destination analyzer process");
+            return -1;
+        }
+    }
+
     return 0;
 }
 
@@ -54,6 +86,7 @@ int prepare(configuration_t *the_config, process_context_t *p_context) {
  * @param parameters is a pointer to the parameters of func
  * @return the PID of the child process (it never returns in the child process)
  */
+
 int make_process(process_context_t *p_context, process_loop_t func, void *parameters) {
     pid_t pid = fork();
 
