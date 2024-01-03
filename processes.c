@@ -44,7 +44,7 @@ int prepare(configuration_t *the_config, process_context_t *p_context) {
         return -1;
     }
 
-    // Create source lister process
+    // Create source lister process :
     p_context->source_lister_pid = make_process(p_context, source_lister_process_loop, NULL);
     if (p_context->source_lister_pid == -1) {
         perror("Failed to create source lister process");
