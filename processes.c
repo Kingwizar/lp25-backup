@@ -71,17 +71,24 @@ int prepare(configuration_t *the_config, process_context_t *p_context) {
     }
 
     // Create source analyzers processes
-    for (int i = 0; i < the_config->processes_count; ++i) {
-        p_context->source_analyzers_pids[i] = make_process(p_context, source_analyzer_process_loop, NULL);
-        if (p_context->source_analyzers_pids[i] == -1) {
-            perror("Failed to create source analyzer process");
-            return -1;
-        }
+    analyzer_configuration_t src_analyzer_parameters;
+    src_analyzer_parameters.my_recipient_id = MSG_TYPE_TO_SOURCE_LISTER;
+    src_analyzer_parameters.my_receiver_id = MSG_TYPE_TO_SOURCE_ANALYZERS;
+    src_analyzer_parameters.mq_key = p_context->shared_key;
+    p_context->source_analyzers_pids = make_process(p_context, analyzer_process_loop, src_analyzer_parameters);
+    if (p_context->source_analyzers_pids == -1) {
+        perror("Failed to create source analyzer process");
+        return -1;
     }
 
+
     // Create destination analyzers processes
+    analyzer_configuration_t dst_analyzer_parameters;
+    dst_analyzer_parameters.my_recipient_id = MSG_TYPE_TO_SOURCE_LISTER;
+    dst_analyzer_parameters.my_receiver_id = MSG_TYPE_TO_SOURCE_ANALYZERS;
+    dst_analyzer_parameters.mq_key = p_context->shared_key;
     for (int i = 0; i < the_config->processes_count; ++i) {
-        p_context->destination_analyzers_pids[i] = make_process(p_context, destination_analyzer_process_loop, NULL);
+        p_context->destination_analyzers_pids[i] = make_process(p_context, analyzer_process_loop, dst_analyzer_parameters);
         if (p_context->destination_analyzers_pids[i] == -1) {
             perror("Failed to create destination analyzer process");
             return -1;
