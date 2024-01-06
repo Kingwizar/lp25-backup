@@ -1,16 +1,12 @@
-#define _POSIX_C_SOURCE 200809L
 #include <openssl/evp.h>
 #include "file-properties.h"
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
-#include <dirent.h>
-#include <unistd.h>
-#include <assert.h>
 #include <string.h>
 #include "defines.h"
 #include <fcntl.h>
-#include "utility.h"
+
 #include <stdlib.h>
 
 /*!
@@ -67,11 +63,12 @@ int get_file_stats(files_list_entry_t *entry) {
  * @return -1 in case of error, 0 else
  * Use libcrypto functions from openssl/evp.h
  */
+
 int compute_file_md5(files_list_entry_t *entry) {
     if (entry == NULL || entry->entry_type != FICHIER) { // Use entry_type
         return -1;
     }
-
+    OpenSSL_add_all_algorithms();
     FILE *file = fopen(entry->path_and_name, "rb"); // Use path_and_name
     if (!file) {
         return -1;
@@ -88,8 +85,8 @@ int compute_file_md5(files_list_entry_t *entry) {
     fseek(file, 0, SEEK_END);
     long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
-
-    if (EVP_DigestInit_ex(mdctx, EVP_md5(), NULL) != 1 ||
+    int errorCode = EVP_DigestInit_ex(mdctx, EVP_md5(), NULL);
+    if ( errorCode != 1 ||
         EVP_DigestUpdate(mdctx, file, file_size) != 1 ||
         EVP_DigestFinal_ex(mdctx, md5_sum, NULL) != 1) {
         EVP_MD_CTX_free(mdctx);

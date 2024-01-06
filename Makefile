@@ -1,12 +1,22 @@
+CC = gcc
+CFLAGS = -Wall -Wextra
 
+SRC_DIR = $(PWD)
+BUILD_DIR = $(PWD)
 
-CFLAGS=-Wall
+SRCS = $(wildcard $(SRC_DIR)/*.c)
+OBJS = $(patsubst $(SRC_DIR)/%.c, $(BUILD_DIR)/%.o, $(SRCS))
+EXECUTABLE = LP25
 
-%.o: %.c %.h
-	gcc $(CFLAGS) -c $< -o $@
+all: $(EXECUTABLE)
 
-main : main.c files-list.o sync.o configuration.o file-properties.o processes.o messages.o utility.o
-	gcc $(CFLAGS) -o $@ $^
+$(EXECUTABLE): $(OBJS)
+	$(CC) $(CFLAGS) -o $@ $^ -lcrypto -lssl
+
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
 
 clean:
-	rm -f *.o lp25-backup
+	rm -rf $(BUILD_DIR)/*.o $(EXECUTABLE)
+
+.PHONY: clean
