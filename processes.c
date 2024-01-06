@@ -47,7 +47,12 @@ int prepare(configuration_t *the_config, process_context_t *p_context) {
     }
 
     // Create source lister process :
-    p_context->source_lister_pid = make_process(p_context, source_lister_process_loop, NULL);
+    lister_configuration_t src_lister_parameters;
+    src_lister_parameters.analyzers_count = (the_config->processes_count-2)/2;
+    src_lister_parameters.my_recipient_id = MSG_TYPE_TO_SOURCE_ANALYZERS;
+    src_lister_parameters.my_receiver_id = MSG_TYPE_TO_SOURCE_LISTER;
+    src_lister_parameters.mq_key = p_context->shared_key;
+    p_context->source_lister_pid = make_process(p_context, lister_process_loop, &src_lister_parameters);
     if (p_context->source_lister_pid == -1) {
         perror("Failed to create source lister process");
         return -1;
