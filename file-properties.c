@@ -1,5 +1,6 @@
-#include "file-properties.h"
 #define _POSIX_C_SOURCE 200809L
+#include "file-properties.h"
+#include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
@@ -9,7 +10,6 @@
 #include <string.h>
 #include "defines.h"
 #include <fcntl.h>
-#include <stdio.h>
 #include "utility.h"
 #include <stdlib.h>
 
