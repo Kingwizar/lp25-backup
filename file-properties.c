@@ -1,10 +1,10 @@
 #define _POSIX_C_SOURCE 200809L
+#include <openssl/evp.h>
 #include "file-properties.h"
 #include <stdio.h>
 #include <sys/stat.h>
 #include <unistd.h>
 #include <dirent.h>
-#include <openssl/evp.h>
 #include <unistd.h>
 #include <assert.h>
 #include <string.h>

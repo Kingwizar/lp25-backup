@@ -1,6 +1,6 @@
 
 
-CFLAGS=-Wall -std=c99
+CFLAGS=-Wall
 
 %.o: %.c %.h
 	gcc $(CFLAGS) -c $< -o $@
