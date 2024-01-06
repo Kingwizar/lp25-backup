@@ -88,7 +88,7 @@ void make_files_list(files_list_t *list, char *target_path) {
         return;
     }
 
-    make_list(list, target_path);
+    make_list(*list, target_path);
 }
 
 /*!
@@ -127,11 +127,11 @@ void copy_entry_to_destination(files_list_entry_t *source_entry, configuration_t
  * @param target is the target dir whose content must be listed
  */
 void make_list(files_list_t list, char *target) {
-    if (list == NULL || target == NULL) {
+    if (&list == NULL || target == NULL) {
         return;
     }
 
-    DIR dir[PATH_SIZE] = open_dir(target);
+    DIR *dir = open_dir(target);
     if (dir == NULL) {
         return;
     }
