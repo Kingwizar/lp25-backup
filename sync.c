@@ -1,10 +1,13 @@
+#include <time.h>
+#include "files-list.h"
 #include "sync.h"
+#include "file-properties.h"
 #include <dirent.h>
 #include <string.h>
 #include "processes.h"
 #include "utility.h"
+
 #include "messages.h"
-#include "file-properties.h"
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/sendfile.h>
@@ -123,12 +126,12 @@ void copy_entry_to_destination(files_list_entry_t *source_entry, configuration_t
  * @param list is a pointer to the list that will be built
  * @param target is the target dir whose content must be listed
  */
-void make_list(files_list_t *list, char *target) {
+void make_list(files_list_t list, char *target) {
     if (list == NULL || target == NULL) {
         return;
     }
 
-    DIR *dir = open_dir(target);
+    DIR dir = open_dir(target);
     if (dir == NULL) {
         return;
     }
@@ -136,7 +139,16 @@ void make_list(files_list_t *list, char *target) {
     struct dirent *entry;
     while ((entry = get_next_entry(dir)) != NULL) {
         // Construct full path and add to list
-        // ...
+        char full_path[PATH_SIZE];
+        snprintf(full_path, PATH_SIZE, "%s/%s", target, entry->d_name);
+
+        // Create a new files_list_entry_t and add it to the list
+        files_list_entry_t *new_entry = add_file_entry(list, full_path);
+
+        // Check if the entry is a directory, and if so, recurse into it
+        if (new_entry != NULL && new_entry->entry_type == DOSSIER) {
+            make_list(list, full_path); // Recurse into the subdirectory
+        }
     }
 
     closedir(dir);

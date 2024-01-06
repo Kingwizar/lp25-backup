@@ -1,13 +1,14 @@
 #pragma once
+
 #include <stdint.h>
 #include <sys/types.h>
 #include <time.h>
 
 typedef enum { FICHIER, DOSSIER } file_type_t;
-
+typedef struct timespec timespec;
 typedef struct _files_list_entry {
   char path_and_name[4096];
-  struct timespec *mtime;
+  timespec mtime;
   uint64_t size;
   uint8_t md5sum[16];
   file_type_t entry_type;
