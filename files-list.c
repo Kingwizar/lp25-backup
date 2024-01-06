@@ -59,29 +59,29 @@ int fill_entry(files_list_t *list, char *file_path, files_list_entry_t *new_entr
  *  @param file_path the full path (from the root of the considered tree) of the file
  *  @return a pointer to the added element if success, NULL else (out of memory)
  */
-files_list_entry_t *add_file_entry(files_list_t *list, char *file_path) {
+files_list_entry_t *add_file_entry(files_list_t *liste, char *file_path) {
 
     // We verify that the list and the file_path are not NULL
-    if (list == NULL || file_path == NULL) {
+    if (liste == NULL || file_path == NULL) {
         printf("Error in the function add_file_entry of the file files-list.c\n");
-        if (list == NULL) {
+        if (liste == NULL) {
             printf("The list is NULL\n");
         }
         if (file_path == NULL) {
             printf("The file_path is NULL\n");
         }
         return NULL;
-    } else if (list->head == NULL || list->tail == NULL) {
-        if (list->head == NULL) {
+    } else if (liste->head == NULL || liste->tail == NULL) {
+        if (liste->head == NULL) {
             printf("The head of the list is NULL\n");
         }
-        if (list->tail == NULL) {
+        if (liste->tail == NULL) {
             printf("The tail of the list is NULL\n");
         }
         return NULL;
     } else {
         //we verify if the file already exists in the list
-        for (files_list_entry_t *cursor = list->head; cursor != NULL; cursor = cursor->next) {
+        for (files_list_entry_t *cursor = liste->head; cursor != NULL; cursor = cursor->next) {
             if (strcmp(cursor->path_and_name, file_path) == 0) {
                 return 0;
             }
@@ -100,16 +100,16 @@ files_list_entry_t *add_file_entry(files_list_t *list, char *file_path) {
         memset(new_entry, 0, sizeof(files_list_entry_t));
 
         // We call the fill_entry function to fill the different elements of the structure of new_entry
-        if ((fill_entry(list, file_path, new_entry)) == 0){
+        if ((fill_entry(liste, file_path, new_entry)) == 0){
 
             // We add the new_entry to the list of files, but we have to add it in an ordered manner (with strcmp)
             // We check if the list is empty, if it is we add the new_entry to the head of the list
             // else we will add it in an ordered manner
-            if (list->head == NULL) {
-                list->head = new_entry;
+            if (liste->head == NULL) {
+                liste->head = new_entry;
                 return new_entry;
             } else {
-                files_list_entry_t *cursor = list->head;
+                files_list_entry_t *cursor = liste->head;
                 while (cursor != NULL) {
                     if (strcmp(cursor->path_and_name, file_path) > 0) {
                         cursor = cursor->next;
@@ -118,14 +118,14 @@ files_list_entry_t *add_file_entry(files_list_t *list, char *file_path) {
                             cursor->prev->next = new_entry;
                             new_entry->prev = cursor->prev;
                         } else {
-                            list->head = new_entry;
+                            liste->head = new_entry;
                         }
                         cursor->prev = new_entry;
                         new_entry->next = cursor;
                         return new_entry;
                     }
                 }
-                list->tail->next = new_entry;
+                liste->tail->next = new_entry;
                 return new_entry;
             }
         } else {

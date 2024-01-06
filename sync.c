@@ -131,7 +131,7 @@ void make_list(files_list_t list, char *target) {
         return;
     }
 
-    DIR dir = open_dir(target);
+    DIR dir[PATH_SIZE] = open_dir(target);
     if (dir == NULL) {
         return;
     }
@@ -143,7 +143,7 @@ void make_list(files_list_t list, char *target) {
         snprintf(full_path, PATH_SIZE, "%s/%s", target, entry->d_name);
 
         // Create a new files_list_entry_t and add it to the list
-        files_list_entry_t *new_entry = add_file_entry(list, full_path);
+        files_list_entry_t *new_entry = add_file_entry(&list, full_path);
 
         // Check if the entry is a directory, and if so, recurse into it
         if (new_entry != NULL && new_entry->entry_type == DOSSIER) {
