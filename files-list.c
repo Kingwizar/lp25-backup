@@ -1,10 +1,10 @@
-#include "files-list.h"
-#include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
-#include "file-properties.h"
-#include <stdio.h>
 
+#include "file-properties.h"
+#include "files-list.h"
+#include <stdlib.h>
+#include <stddef.h>
+#include <string.h>
+#include <stdio.h>
 /*!
  * @brief clear_files_list clears a files list
  * @param list is a pointer to the list to be cleared
@@ -17,6 +17,38 @@ void clear_files_list(files_list_t *list) {
         free(tmp);
     }
 }
+/*!
+ *  @brief fill_entry fills the properties of a file entry
+ *  It fills the properties of a file entry by calling stat on the file.
+ *  @param list the list to add the file entry into
+ *  @param file_path the full path (from the root of the considered tree) of the file
+ *  @param new_entry the entry to fill
+ *  @return 0 in case of success, -1 else
+ */
+int fill_entry(files_list_t *list, char *file_path, files_list_entry_t *new_entry) {
+
+    //  Filling "char path_and_name[4096]";
+    strcpy(new_entry->path_and_name, file_path);
+
+    if (get_file_stats(new_entry)) == -1){
+        printf("Error in the function fill_entry of the file files-list.c\n");
+        printf("The get_file_stats function failed\n");
+        return -1;
+    }
+
+    //  Filling "struct _files_list_entry *next"
+    new_entry->next = NULL;
+
+    //  Filling "struct _files_list_entry *prev"
+    if (!list->tail) {
+        new_entry->prev = list->tail;
+    } else {
+        new_entry->prev = NULL;
+    }
+    list->tail = new_entry;
+
+    return 0;
+}
 
 /*!
  *  @brief add_file_entry adds a new file to the files list.
@@ -25,60 +57,87 @@ void clear_files_list(files_list_t *list) {
  *  Il the file already exists, it does nothing and returns 0
  *  @param list the list to add the file entry into
  *  @param file_path the full path (from the root of the considered tree) of the file
- *  @return 0 if success, -1 else (out of memory)
+ *  @return a pointer to the added element if success, NULL else (out of memory)
  */
 files_list_entry_t *add_file_entry(files_list_t *list, char *file_path) {
+
+    // We verify that the list and the file_path are not NULL
     if (list == NULL || file_path == NULL) {
+        printf("Error in the function add_file_entry of the file files-list.c\n");
+        if (list == NULL) {
+            printf("The list is NULL\n");
+        }
+        if (file_path == NULL) {
+            printf("The file_path is NULL\n");
+        }
         return NULL;
-    }
-
-    // Create new file entry
-    files_list_entry_t *new_entry = (files_list_entry_t *)malloc(sizeof(files_list_entry_t));
-    if (new_entry == NULL) {
+    } else if (list->head == NULL || list->tail == NULL) {
+        if (list->head == NULL) {
+            printf("The head of the list is NULL\n");
+        }
+        if (list->tail == NULL) {
+            printf("The tail of the list is NULL\n");
+        }
         return NULL;
-    }
-
-    // Initialize the new entry
-    strncpy(new_entry->path_and_name, file_path, sizeof(new_entry->path_and_name));
-    new_entry->path_and_name[sizeof(new_entry->path_and_name) - 1] = '\0';
-    new_entry->next = NULL;
-    new_entry->prev = NULL;
-    // Call get_file_stats to fill other properties
-    if (get_file_stats(new_entry) == -1) {
-        free(new_entry);
-        return NULL;
-    }
-
-    // Insert entry into the list in an ordered manner
-    files_list_entry_t *cursor = list->head;
-    files_list_entry_t *prev = NULL;
-    while (cursor != NULL && strcmp(cursor->path_and_name, file_path) < 0) {
-        prev = cursor;
-        cursor = cursor->next;
-    }
-
-    // If file already exists in the list, return
-    if (cursor != NULL && strcmp(cursor->path_and_name, file_path) == 0) {
-        free(new_entry);
-        return cursor;
-    }
-
-    new_entry->next = cursor;
-    if (cursor != NULL) {
-        cursor->prev = new_entry;
     } else {
-        list->tail = new_entry;
-    }
+        //we verify if the file already exists in the list
+        for (files_list_entry_t *cursor = list->head; cursor != NULL; cursor = cursor->next) {
+            if (strcmp(cursor->path_and_name, file_path) == 0) {
+                return 0;
+            }
+        }
+        // If the file does not exist in the list, we will add it
 
-    if (prev != NULL) {
-        prev->next = new_entry;
-        new_entry->prev = prev;
-    } else {
-        list->head = new_entry;
-    }
+        // we allocate memory for a variable of type files_list_entry_t named new_entry
+        files_list_entry_t *new_entry = malloc(sizeof(files_list_entry_t));
+        // We check if the allocation of memory was successful, if not we return NULL (out of memory)
+        if (!new_entry) {
+            printf("Error when allocating memory in the function add_file_entry of the file files-list.c\n");
+            return NULL;
+        }
 
-    return new_entry;
+        // We initialize the entire memory space allocated to new entry to 0;
+        memset(new_entry, 0, sizeof(files_list_entry_t));
+
+        // We call the fill_entry function to fill the different elements of the structure of new_entry
+        if ((fill_entry(list, file_path, new_entry)) == 0){
+
+            // We add the new_entry to the list of files, but we have to add it in an ordered manner (with strcmp)
+            // We check if the list is empty, if it is we add the new_entry to the head of the list
+            // else we will add it in an ordered manner
+            if (list->head == NULL) {
+                list->head = new_entry;
+                return new_entry;
+            } else {
+                files_list_entry_t *cursor = list->head;
+                while (cursor != NULL) {
+                    if (strcmp(cursor->path_and_name, file_path) > 0) {
+                        cursor = cursor->next;
+                    } else {
+                        if (cursor->prev) {
+                            cursor->prev->next = new_entry;
+                            new_entry->prev = cursor->prev;
+                        } else {
+                            list->head = new_entry;
+                        }
+                        cursor->prev = new_entry;
+                        new_entry->next = cursor;
+                        return new_entry;
+                    }
+                }
+                list->tail->next = new_entry;
+                return new_entry;
+            }
+        } else {
+            // If the fill_entry function failed we free the memory allocated to new_entry, and we return NULL,
+            // the error message is already displayed in the fill_entry function
+            free(new_entry);
+            return NULL;
+        }
+    }
 }
+
+
 
 /*!
  * @brief add_entry_to_tail adds an entry directly to the tail of the list
@@ -89,21 +148,34 @@ files_list_entry_t *add_file_entry(files_list_t *list, char *file_path) {
  * @return 0 in case of success, -1 else
  */
 int add_entry_to_tail(files_list_t *list, files_list_entry_t *entry) {
+    // We check if the list or the entry are NULL or not
     if (list == NULL || entry == NULL) {
+        printf("Error in the function add_entry_to_tail of the file files-list.c\n");
+        if (list == NULL) {
+            printf("The list is NULL\n");
+        }
+        if (entry == NULL) {
+            printf("The entry is NULL\n");
+        }
         return -1;
-    }
-
-    entry->next = NULL;
-    if (list->tail != NULL) {
-        list->tail->next = entry;
-        entry->prev = list->tail;
     } else {
-        list->head = entry;
-        entry->prev = NULL;
+        // We check if the list is empty, if it is we add the entry to the head and the tail of the list (the list has only one element)
+        // else we will add it only to the tail of the list
+        if (list->head == NULL && list->tail == NULL) {
+            list->head = entry;
+            list->tail = entry;
+            return 0;
+        } else if (list->head != NULL && list->tail != NULL){
+            list->tail->next = entry;
+            entry->prev = list->tail;
+            list->tail = entry;
+            return 0;
+        } else {
+            printf("Error in the function add_entry_to_tail of the file files-list.c\n");
+            printf("The list is not empty but the head or the tail is NULL\n");
+            return -1;
+        }
     }
-
-    list->tail = entry;
-    return 0;
 }
 
 /*!
@@ -116,18 +188,37 @@ int add_entry_to_tail(files_list_t *list, files_list_entry_t *entry) {
  *  @return a pointer to the element found, NULL if none were found.
  */
 files_list_entry_t *find_entry_by_name(files_list_t *list, char *file_path, size_t start_of_src, size_t start_of_dest) {
-    // If list or path is NULL we return NULL
+
+    // We check if the list or file_path is NULL or not
     if (list == NULL || file_path == NULL) {
+        printf("Error in the function find_entry_by_name of the file files-list.c\n");
+        if (list == NULL) {
+            printf("The list is NULL\n");
+        }
+        if (file_path == NULL) {
+            printf("The file_path is NULL\n");
+        }
+        return NULL;
+    } else if (list->head == NULL) {
+        printf("The head of the list is NULL\n");
+        return NULL;
+    } else {
+        // We create a variable of type files_list_entry_t named cursor, and we initialize it with the head of the list
+        files_list_entry_t *cursor = list->head;
+        while (cursor != NULL) {
+            // We check if the file_path is the same as the path_and_name of the cursor
+            // if it is we return the cursor
+            if (strcmp(file_path, cursor->path_and_name) == 0) {
+                return cursor;
+            } else {
+                cursor = cursor->next;
+            }
+        }
+        // If we did not find the file_path in the list we return NULL
+        printf("Error in the function find_entry_by_name of the file files-list.c\n");
+        printf("The file_path is not in the list\n");
         return NULL;
     }
-
-    for (files_list_entry_t *cursor = list->head; cursor != NULL; cursor = cursor->next) {
-        if (strcmp(cursor->path_and_name + start_of_src, file_path + start_of_dest) == 0) {
-            return cursor; // Stop the research
-        }
-    }
-
-    return NULL;
 }
 
 /*!
@@ -138,7 +229,7 @@ files_list_entry_t *find_entry_by_name(files_list_t *list, char *file_path, size
 void display_files_list(files_list_t *list) {
     if (!list)
         return;
-    
+
     for (files_list_entry_t *cursor=list->head; cursor!=NULL; cursor=cursor->next) {
         printf("%s\n", cursor->path_and_name);
     }
@@ -152,7 +243,7 @@ void display_files_list(files_list_t *list) {
 void display_files_list_reversed(files_list_t *list) {
     if (!list)
         return;
-    
+
     for (files_list_entry_t *cursor=list->tail; cursor!=NULL; cursor=cursor->prev) {
         printf("%s\n", cursor->path_and_name);
     }
