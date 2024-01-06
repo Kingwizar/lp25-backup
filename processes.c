@@ -59,7 +59,12 @@ int prepare(configuration_t *the_config, process_context_t *p_context) {
     }
 
     // Create destination lister process :
-    p_context->destination_lister_pid = make_process(p_context, destination_lister_process_loop, NULL);
+    lister_configuration_t  dst_lister_parameters;
+    dst_lister_parameters.analyzers_count = (the_config->processes_count-2)/2;
+    dst_lister_parameters.my_recipient_id = MSG_TYPE_TO_SOURCE_ANALYZERS;
+    dst_lister_parameters.my_receiver_id = MSG_TYPE_TO_SOURCE_LISTER;
+    dst_lister_parameters.mq_key = p_context->shared_key;
+    p_context->destination_lister_pid = make_process(p_context, lister_process_loop, dst_lister_parameters);
     if (p_context->destination_lister_pid == -1) {
         perror("Failed to create destination lister process");
         return -1;
