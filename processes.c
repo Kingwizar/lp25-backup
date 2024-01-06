@@ -92,17 +92,13 @@ int prepare(configuration_t *the_config, process_context_t *p_context) {
 int make_process(process_context_t *p_context, process_loop_t func, void *parameters) {
     pid_t pid = fork();
 
-    if (pid < 0) { // Fork failed
-        return -1;
-    }
 
     if (pid == 0) { // Child process
         func(parameters);
-        exit(EXIT_SUCCESS);
+    }else{
+        p_context->processes_count++;
+        return pid;
     }
-
-    // Parent process
-    return pid;
 }
 
 /*!
