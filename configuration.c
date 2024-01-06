@@ -16,7 +16,7 @@ void display_help(char *my_name) {
     printf("%s [options] source_dir destination_dir\n", my_name);
     printf("Options: \t-n <processes count>\tnumber of processes for file calculations\n");
     printf("         \t-h display help (this text)\n");
-    printf("         \t--date_size_only disables MD5 calculation for files\n");
+    printf("         \t--date-size-only disables MD5 calculation for files\n");
     printf("         \t--no-parallel disables parallel computing (cancels values of option -n)\n");
     printf("         \t--dry-run for test execution (just list the operations to do, do not actually make the copies)\n");
     printf("         \t-v for verbose (display of the list and operations in details)\n");
