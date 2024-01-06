@@ -1,7 +1,6 @@
 #pragma once
-
 #include <stdint.h>
-#include <sys/time.h>
+#include <time.h>
 #include <sys/types.h>
 
 typedef enum { FICHIER, DOSSIER } file_type_t;
